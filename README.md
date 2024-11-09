@@ -1,0 +1,1 @@
+There are currently two files both contains the following fields: id	tcin	class_id	department_id	image	title	brand	rating	ratings_total	item_type	item_type_no	price	highest_secondary_rating	formatted_price_type	unit_price	product_info	specifications_flat	category_id	parent_category_id	breadcrumbs	servings	ingredients	nutrients	aisle	stock_level	latitude	longitude	store_id
