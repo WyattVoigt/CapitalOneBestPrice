@@ -66,15 +66,56 @@ button:hover {
     background-color: #c0392b;
 }
 
-/* Section Styles */
-#heb_section, #target_section, #walmart_section,
-#selected_items_section, #total_costs_section, #savings_section {
-    background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 20px;
+/* Layout for Top 10 Lists */
+.items-container {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
     margin-bottom: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.items-container > div {
+    flex: 1;
+    text-align: left;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+li label {
+    flex: 1;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+li span {
+    margin-left: 10px;
+    white-space: nowrap;
+}
+
+/* Selected Items Styling */
+#selected_items_section {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+}
+
+#selected_items_section div {
+    flex: 1;
+    text-align: left;
 }
 
 h2, h3 {
@@ -84,27 +125,40 @@ h2, h3 {
     margin-bottom: 15px;
 }
 
-ul {
-    list-style-type: none;
-    padding: 0;
+ul#selected_items_heb, ul#selected_items_target, ul#selected_items_walmart {
+    padding-left: 0;
 }
 
-li {
-    padding: 8px 0;
-    border-bottom: 1px solid #eee;
+/* Total Costs and Savings */
+#total_costs_section {
+    text-align: center;
+    margin-top: 20px;
 }
 
-li:last-child {
-    border-bottom: none;
-}
-
-/* Savings Message */
-#savings_message {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #27ae60;
+#savings_section {
     text-align: center;
     margin-top: 15px;
+    font-weight: bold;
+    color: #27ae60;
+}
+
+/* Finish Button Styling */
+.finish-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s;
+    display: none;
+}
+
+.finish-btn:hover {
+    background-color: #218838;
 }
 
 /* Mobile Responsiveness */
@@ -125,6 +179,48 @@ li:last-child {
     button {
         width: 100%;
     }
+    /* General Centering for Second Page */
+.second-page-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Full viewport height */
+    text-align: center;
+    padding: 20px;
 }
 
+.second-page-container h1,
+.second-page-container h2,
+.second-page-container h3,
+.second-page-container p {
+    margin: 10px 0;
+}
 
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+li {
+    padding: 8px 0;
+}
+
+/* Styling for the Finish Button on Second Page */
+.finish-btn {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s;
+    margin-top: 20px;
+}
+
+.finish-btn:hover {
+    background-color: #218838;
+}
+
+}
