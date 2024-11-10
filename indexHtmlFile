@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Search and Selection</title>
+</head>
+<body>
+    <h1>Search for Products</h1>
+
+    {% if not show_done %}
+        <!-- Search Form -->
+        <form method="POST">
+            <label for="search_input">Enter an item name:</label>
+            <input type="text" id="search_input" name="search_input" value="{{ search_input }}" required>
+            <button type="submit" name="search">Search</button>
+        </form>
+
+        <!-- Display Top 10 HEB Matches -->
+        {% if top_heb_matches %}
+            <h2>Top 10 HEB Matches</h2>
+            <form method="POST">
+                <ul>
+                    {% for idx, item in enumerate(top_heb_matches) %}
+                        <li>
+                            <input type="radio" name="selected_heb" value="{{ idx }}" id="heb_{{ idx }}">
+                            <label for="heb_{{ idx }}">{{ item['title'] }} - ${{ item['price'] }}</label>
+                        </li>
+                    {% endfor %}
+                </ul>
+        {% endif %}
+
+        <!-- Display Top 10 Target Matches -->
+        {% if top_target_matches %}
+            <h2>Top 10 Target Matches</h2>
+                <ul>
+                    {% for idx, item in enumerate(top_target_matches) %}
+                        <li>
+                            <input type="radio" name="selected_target" value="{{ idx }}" id="target_{{ idx }}">
+                            <label for="target_{{ idx }}">{{ item['title'] }} - ${{ item['price'] }}</label>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <button type="submit" name="upload">Upload Selected Items</button>
+                <button type="submit" name="done">Done</button>
+            </form>
+        {% endif %}
+    {% endif %}
+
+    <!-- Display Selected Items When Done -->
+    {% if show_done %}
+        <h2>Your Selected Items</h2>
+        <h3>HEB:</h3>
+        <ul>
+            {% for item in selected_items_heb %}
+                <li>{{ item['title'] }} - ${{ item['price'] }}</li>
+            {% endfor %}
+        </ul>
+        <h3>Target:</h3>
+        <ul>
+            {% for item in selected_items_target %}
+                <li>{{ item['title'] }} - ${{ item['price'] }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>
