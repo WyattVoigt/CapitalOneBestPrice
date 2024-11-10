@@ -7,6 +7,37 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        /* Styles for side-by-side layout */
+        .items-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .items-container > div {
+            flex: 1;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Space between radio button and label */
+            padding: 4px 0;
+            text-align: left;
+        }
+
+        label {
+            flex: 1;
+            text-align: left;
+        }
+    </style>
 </head>
 <body>
     <h1>Search for Products</h1>
@@ -19,73 +50,89 @@
         <button type="button" id="clear">Clear List</button>
     </form>
 
-    <!-- Display Top 10 HEB Matches -->
-    <div id="heb_section">
-        {% if top_heb_matches %}
+    <!-- Top 10 Items Side by Side -->
+    <div class="items-container">
+        <!-- HEB Matches -->
+        <div id="heb_section">
             <h2>Top 10 HEB Matches</h2>
-            <ul id="heb_matches">
-                {% for idx, item in enumerate(top_heb_matches) %}
-                    <li>
-                        <input type="radio" name="selected_heb" value="{{ idx }}" id="heb_{{ idx }}">
-                        <label for="heb_{{ idx }}">{{ item['title'] }} - ${{ '%.2f'|format(item['price']) }}</label>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    </div>
+            {% if top_heb_matches %}
+                <ul id="heb_matches">
+                    {% for idx, item in enumerate(top_heb_matches) %}
+                        <li>
+                            <input type="radio" name="selected_heb" value="{{ idx }}" id="heb_{{ idx }}">
+                            <label for="heb_{{ idx }}">{{ item['title'] }} <span>${{ '%.2f'|format(item['price']) }}</span></label>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <ul id="heb_matches"></ul> <!-- Empty list for clearing -->
+            {% endif %}
+        </div>
 
-    <!-- Display Top 10 Target Matches -->
-    <div id="target_section">
-        {% if top_target_matches %}
+        <!-- Target Matches -->
+        <div id="target_section">
             <h2>Top 10 Target Matches</h2>
-            <ul id="target_matches">
-                {% for idx, item in enumerate(top_target_matches) %}
-                    <li>
-                        <input type="radio" name="selected_target" value="{{ idx }}" id="target_{{ idx }}">
-                        <label for="target_{{ idx }}">{{ item['title'] }} - ${{ '%.2f'|format(item['price']) }}</label>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    </div>
+            {% if top_target_matches %}
+                <ul id="target_matches">
+                    {% for idx, item in enumerate(top_target_matches) %}
+                        <li>
+                            <input type="radio" name="selected_target" value="{{ idx }}" id="target_{{ idx }}">
+                            <label for="target_{{ idx }}">{{ item['title'] }} <span>${{ '%.2f'|format(item['price']) }}</span></label>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <ul id="target_matches"></ul> <!-- Empty list for clearing -->
+            {% endif %}
+        </div>
 
-    <!-- Display Top 10 Walmart Matches -->
-    <div id="walmart_section">
-        {% if top_walmart_matches %}
+        <!-- Walmart Matches -->
+        <div id="walmart_section">
             <h2>Top 10 Walmart Matches</h2>
-            <ul id="walmart_matches">
-                {% for idx, item in enumerate(top_walmart_matches) %}
-                    <li>
-                        <input type="radio" name="selected_walmart" value="{{ idx }}" id="walmart_{{ idx }}">
-                        <label for="walmart_{{ idx }}">{{ item['Title'] }} - ${{ '%.2f'|format(item['PRICE_CURRENT']) }}</label>
-                    </li>
-                {% endfor %}
-            </ul>
-            <button id="upload">Add Selected Items</button>
-        {% endif %}
+            {% if top_walmart_matches %}
+                <ul id="walmart_matches">
+                    {% for idx, item in enumerate(top_walmart_matches) %}
+                        <li>
+                            <input type="radio" name="selected_walmart" value="{{ idx }}" id="walmart_{{ idx }}">
+                            <label for="walmart_{{ idx }}">{{ item['Title'] }} <span>${{ '%.2f'|format(item['PRICE_CURRENT']) }}</span></label>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <ul id="walmart_matches"></ul> <!-- Empty list for clearing -->
+            {% endif %}
+        </div>
     </div>
 
-    <!-- Display Selected Items -->
-    <div id="selected_items_section">
-        <h2>Your Selected Items</h2>
-        <h3>HEB:</h3>
-        <ul id="selected_items_heb">
-            {% for title, price in selected_items_heb %}
-                <li>{{ title }} - ${{ '%.2f'|format(price) }}</li>
-            {% endfor %}
-        </ul>
-        <h3>Target:</h3>
-        <ul id="selected_items_target">
-            {% for title, price in selected_items_target %}
-                <li>{{ title }} - ${{ '%.2f'|format(price) }}</li>
-            {% endfor %}
-        </ul>
-        <h3>Walmart:</h3>
-        <ul id="selected_items_walmart">
-            {% for title, price in selected_items_walmart %}
-                <li>{{ title }} - ${{ '%.2f'|format(price) }}</li>
-            {% endfor %}
-        </ul>
+    <!-- Button to Add Selected Items -->
+    <button id="upload">Add Selected Items</button>
+
+    <!-- Display Selected Items Side by Side -->
+    <div id="selected_items_section" class="items-container">
+        <div>
+            <h3>HEB:</h3>
+            <ul id="selected_items_heb">
+                {% for title, price in selected_items_heb %}
+                    <li>{{ title }} <span>${{ '%.2f'|format(price) }}</span></li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div>
+            <h3>Target:</h3>
+            <ul id="selected_items_target">
+                {% for title, price in selected_items_target %}
+                    <li>{{ title }} <span>${{ '%.2f'|format(price) }}</span></li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div>
+            <h3>Walmart:</h3>
+            <ul id="selected_items_walmart">
+                {% for title, price in selected_items_walmart %}
+                    <li>{{ title }} <span>${{ '%.2f'|format(price) }}</span></li>
+                {% endfor %}
+            </ul>
+        </div>
     </div>
 
     <!-- Display Total Costs -->
@@ -98,8 +145,15 @@
 
     <!-- Display Savings -->
     <div id="savings_section">
-        <p id="savings_message">You would save an average of ${{ savings }} at {{ cheaper_store }}.</p>
+        {% if cheaper_store != "N/A" %}
+            <p id="savings_message">You would save an average of ${{ savings }} at {{ cheaper_store }}.</p>
+        {% else %}
+            <p id="savings_message">Add more items to compare savings!</p>
+        {% endif %}
     </div>
+
+    <!-- Finish Button -->
+    <a href="{{ url_for('nextpage') }}" class="finish-btn" id="finishBtn" style="display: none;">Finish</a>
 
     <script>
         $(document).ready(function() {
@@ -130,17 +184,17 @@
                         // Update Selected Items
                         $('#selected_items_heb').empty();
                         response.selected_items_heb.forEach(function(item) {
-                            $('#selected_items_heb').append('<li>' + item[0] + ' - $' + parseFloat(item[1]).toFixed(2) + '</li>');
+                            $('#selected_items_heb').append('<li>' + item[0] + ' <span>$' + parseFloat(item[1]).toFixed(2) + '</span></li>');
                         });
 
                         $('#selected_items_target').empty();
                         response.selected_items_target.forEach(function(item) {
-                            $('#selected_items_target').append('<li>' + item[0] + ' - $' + parseFloat(item[1]).toFixed(2) + '</li>');
+                            $('#selected_items_target').append('<li>' + item[0] + ' <span>$' + parseFloat(item[1]).toFixed(2) + '</span></li>');
                         });
 
                         $('#selected_items_walmart').empty();
                         response.selected_items_walmart.forEach(function(item) {
-                            $('#selected_items_walmart').append('<li>' + item[0] + ' - $' + parseFloat(item[1]).toFixed(2) + '</li>');
+                            $('#selected_items_walmart').append('<li>' + item[0] + ' <span>$' + parseFloat(item[1]).toFixed(2) + '</span></li>');
                         });
 
                         // Update Total Costs
@@ -151,10 +205,10 @@
                         // Update Savings Message
                         $('#savings_message').text('You would save $' + response.savings + ' at ' + response.cheaper_store + '.');
 
-                        // Clear search results
-                        $('#heb_section').remove();
-                        $('#target_section').remove();
-                        $('#walmart_section').remove();
+                        // Show the Finish button if there are any selected items
+                        if (response.selected_items_heb.length > 0 || response.selected_items_target.length > 0 || response.selected_items_walmart.length > 0) {
+                            $('#finishBtn').show();
+                        }
                     }
                 });
             });
@@ -174,7 +228,15 @@
                         $('#total_cost_heb').text('0.00');
                         $('#total_cost_target').text('0.00');
                         $('#total_cost_walmart').text('0.00');
-                        $('#savings_message').text('You would save $0.00 at HEB.');
+                        $('#savings_message').text('Add more items to compare savings!');
+
+                        // Clear Top 10 Lists
+                        $('#heb_matches').empty();
+                        $('#target_matches').empty();
+                        $('#walmart_matches').empty();
+
+                        // Hide the Finish button
+                        $('#finishBtn').hide();
                     }
                 });
             });
