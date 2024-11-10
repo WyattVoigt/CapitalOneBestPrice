@@ -13,12 +13,10 @@ df_heb = pd.read_csv(file_path_heb, encoding='latin1', on_bad_lines='skip')
 df_target = pd.read_csv(file_path_target, encoding='latin1', on_bad_lines='skip')
 df_walmart = pd.read_csv(file_path_walmart, encoding='latin1', on_bad_lines='skip')
 
-
 # Clear session data on app start
 @app.before_first_request
 def clear_session():
     session.clear()
-
 
 # Helper function to initialize session data
 def initialize_session_data():
@@ -35,22 +33,18 @@ def initialize_session_data():
     if 'total_cost_walmart' not in session:
         session['total_cost_walmart'] = 0.0
 
-
 def calculate_savings():
-    # Get the total costs from the session
     cost_heb = session.get('total_cost_heb', 0.0)
     cost_target = session.get('total_cost_target', 0.0)
     cost_walmart = session.get('total_cost_walmart', 0.0)
 
     # Filter out stores with a cost of 0.0
-    costs = { "HEB": cost_heb, "Target": cost_target, "Walmart": cost_walmart }
-    non_zero_costs = { store: cost for store, cost in costs.items() if cost > 0 }
+    costs = {"HEB": cost_heb, "Target": cost_target, "Walmart": cost_walmart}
+    non_zero_costs = {store: cost for store, cost in costs.items() if cost > 0}
 
-    # If there are fewer than two stores with non-zero costs, we cannot calculate savings
     if len(non_zero_costs) < 2:
         return 0.0, "N/A"
 
-    # Determine the cheapest store and calculate savings
     cheapest_store = min(non_zero_costs, key=non_zero_costs.get)
     cheapest_cost = non_zero_costs[cheapest_store]
     remaining_costs = [cost for store, cost in non_zero_costs.items() if store != cheapest_store]
@@ -58,8 +52,6 @@ def calculate_savings():
     savings = round(average_of_higher - cheapest_cost, 2)
 
     return savings, cheapest_store
-
-
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -100,7 +92,6 @@ def index():
                            cheaper_store=cheaper_store,
                            enumerate=enumerate)
 
-
 @app.route("/add_items", methods=["POST"])
 def add_items():
     initialize_session_data()
@@ -129,9 +120,8 @@ def add_items():
         price = round(float(selected_walmart['PRICE_CURRENT']), 2)
         session['selected_items_walmart'].append((selected_walmart['Title'], price))
         session['total_cost_walmart'] = round(session['total_cost_walmart'] + price, 2)
-    # Save session changes
-    session.modified = True
 
+    session.modified = True
     savings, cheaper_store = calculate_savings()
 
     return jsonify({
@@ -145,7 +135,6 @@ def add_items():
         'cheaper_store': cheaper_store
     })
 
-
 @app.route("/clear_items", methods=["POST"])
 def clear_items():
     session['selected_items_heb'] = []
@@ -155,21 +144,17 @@ def clear_items():
     session['total_cost_target'] = 0.0
     session['total_cost_walmart'] = 0.0
     session.modified = True
-
     return jsonify(success=True)
+
 @app.route("/nextpage", methods=["GET"])
 def nextpage():
-    # Calculate the cheapest store and gather all selected items
     total_costs = {
         "HEB": session.get('total_cost_heb', 0.0),
         "Target": session.get('total_cost_target', 0.0),
         "Walmart": session.get('total_cost_walmart', 0.0)
     }
-
-    # Filter out stores with a total cost of 0.0
     non_empty_stores = {store: cost for store, cost in total_costs.items() if cost > 0.0}
 
-    # Find the cheapest store
     if non_empty_stores:
         cheapest_store = min(non_empty_stores, key=non_empty_stores.get)
         running_total = non_empty_stores[cheapest_store]
@@ -177,7 +162,6 @@ def nextpage():
         cheapest_store = "N/A"
         running_total = 0.0
 
-    # Gather items for the cheapest store
     all_items = {
         "HEB": session.get('selected_items_heb', []),
         "Target": session.get('selected_items_target', []),
@@ -191,5 +175,7 @@ def nextpage():
         running_total=f"{running_total:.2f}",
         items_for_cheapest_store=items_for_cheapest_store
     )
+
 if __name__ == "__main__":
     app.run(debug=True)
+
