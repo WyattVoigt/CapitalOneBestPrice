@@ -4,64 +4,135 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Search and Selection</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <h1>Search for Products</h1>
 
-    {% if not show_done %}
-        <!-- Search Form -->
-        <form method="POST">
-            <label for="search_input">Enter an item name:</label>
-            <input type="text" id="search_input" name="search_input" value="{{ search_input }}" required>
-            <button type="submit" name="search">Search</button>
-        </form>
+    <!-- Search Form -->
+    <form method="POST">
+        <label for="search_input">Enter an item name:</label>
+        <input type="text" id="search_input" name="search_input" value="{{ search_input }}" required>
+        <button type="submit" name="search">Search</button>
+        <button type="button" id="clear">Clear List</button>
+    </form>
 
-        <!-- Display Top 10 HEB Matches -->
+    <!-- Display Top 10 HEB Matches -->
+    <div id="heb_section">
         {% if top_heb_matches %}
             <h2>Top 10 HEB Matches</h2>
-            <form method="POST">
-                <ul>
-                    {% for idx, item in enumerate(top_heb_matches) %}
-                        <li>
-                            <input type="radio" name="selected_heb" value="{{ idx }}" id="heb_{{ idx }}">
-                            <label for="heb_{{ idx }}">{{ item['title'] }} - ${{ item['price'] }}</label>
-                        </li>
-                    {% endfor %}
-                </ul>
+            <ul id="heb_matches">
+                {% for idx, item in enumerate(top_heb_matches) %}
+                    <li>
+                        <input type="radio" name="selected_heb" value="{{ idx }}" id="heb_{{ idx }}">
+                        <label for="heb_{{ idx }}">{{ item['title'] }} - ${{ item['price'] }}</label>
+                    </li>
+                {% endfor %}
+            </ul>
         {% endif %}
+    </div>
 
-        <!-- Display Top 10 Target Matches -->
+    <!-- Display Top 10 Target Matches -->
+    <div id="target_section">
         {% if top_target_matches %}
             <h2>Top 10 Target Matches</h2>
-                <ul>
-                    {% for idx, item in enumerate(top_target_matches) %}
-                        <li>
-                            <input type="radio" name="selected_target" value="{{ idx }}" id="target_{{ idx }}">
-                            <label for="target_{{ idx }}">{{ item['title'] }} - ${{ item['price'] }}</label>
-                        </li>
-                    {% endfor %}
-                </ul>
-                <button type="submit" name="upload">Upload Selected Items</button>
-                <button type="submit" name="done">Done</button>
-            </form>
+            <ul id="target_matches">
+                {% for idx, item in enumerate(top_target_matches) %}
+                    <li>
+                        <input type="radio" name="selected_target" value="{{ idx }}" id="target_{{ idx }}">
+                        <label for="target_{{ idx }}">{{ item['title'] }} - ${{ item['price'] }}</label>
+                    </li>
+                {% endfor %}
+            </ul>
+            <button id="upload">Add Selected Items</button>
         {% endif %}
-    {% endif %}
+    </div>
 
-    <!-- Display Selected Items When Done -->
-    {% if show_done %}
+    <!-- Display Selected Items -->
+    <div id="selected_items_section">
         <h2>Your Selected Items</h2>
         <h3>HEB:</h3>
-        <ul>
-            {% for item in selected_items_heb %}
-                <li>{{ item['title'] }} - ${{ item['price'] }}</li>
+        <ul id="selected_items_heb">
+            {% for title, price in selected_items_heb %}
+                <li>{{ title }} - ${{ price }}</li>
             {% endfor %}
         </ul>
         <h3>Target:</h3>
-        <ul>
-            {% for item in selected_items_target %}
-                <li>{{ item['title'] }} - ${{ item['price'] }}</li>
+        <ul id="selected_items_target">
+            {% for title, price in selected_items_target %}
+                <li>{{ title }} - ${{ price }}</li>
             {% endfor %}
         </ul>
-    {% endif %}
+    </div>
+
+    <!-- Display Total Costs -->
+    <div id="total_costs_section">
+        <h2>Total Costs</h2>
+        <p>HEB: $<span id="total_cost_heb">{{ total_cost_heb }}</span></p>
+        <p>Target: $<span id="total_cost_target">{{ total_cost_target }}</span></p>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Add selected items and clear search results
+            $('#upload').on('click', function(e) {
+                e.preventDefault();
+
+                const selectedHeb = $('input[name="selected_heb"]:checked').val();
+                const selectedTarget = $('input[name="selected_target"]:checked').val();
+                const topHebMatches = {{ top_heb_matches|tojson }};
+                const topTargetMatches = {{ top_target_matches|tojson }};
+
+                $.ajax({
+                    url: "/add_items",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        selected_heb: selectedHeb,
+                        selected_target: selectedTarget,
+                        top_heb_matches: topHebMatches,
+                        top_target_matches: topTargetMatches
+                    }),
+                    success: function(response) {
+                        // Update Selected Items
+                        $('#selected_items_heb').empty();
+                        response.selected_items_heb.forEach(function(item) {
+                            $('#selected_items_heb').append('<li>' + item[0] + ' - $' + item[1] + '</li>');
+                        });
+
+                        $('#selected_items_target').empty();
+                        response.selected_items_target.forEach(function(item) {
+                            $('#selected_items_target').append('<li>' + item[0] + ' - $' + item[1] + '</li>');
+                        });
+
+                        // Update Total Costs
+                        $('#total_cost_heb').text(response.total_cost_heb);
+                        $('#total_cost_target').text(response.total_cost_target);
+
+                        // Clear search results
+                        $('#heb_section').remove();
+                        $('#target_section').remove();
+                    }
+                });
+            });
+
+            // Clear all selected items and totals
+            $('#clear').on('click', function(e) {
+                e.preventDefault();
+
+                $.ajax({
+                    url: "/clear_items",
+                    type: "POST",
+                    success: function() {
+                        // Clear displayed items and reset totals
+                        $('#selected_items_heb').empty();
+                        $('#selected_items_target').empty();
+                        $('#total_cost_heb').text('0');
+                        $('#total_cost_target').text('0');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
