@@ -7,7 +7,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-</head><body>
+</head>
+<body>
     <h1>Search for Products</h1>
 
     <!-- Search Form -->
@@ -45,6 +46,21 @@
                     </li>
                 {% endfor %}
             </ul>
+        {% endif %}
+    </div>
+
+    <!-- Display Top 10 Walmart Matches -->
+    <div id="walmart_section">
+        {% if top_walmart_matches %}
+            <h2>Top 10 Walmart Matches</h2>
+            <ul id="walmart_matches">
+                {% for idx, item in enumerate(top_walmart_matches) %}
+                    <li>
+                        <input type="radio" name="selected_walmart" value="{{ idx }}" id="walmart_{{ idx }}">
+                        <label for="walmart_{{ idx }}">{{ item['Title'] }} - ${{ '%.2f'|format(item['PRICE_CURRENT']) }}</label>
+                    </li>
+                {% endfor %}
+            </ul>
             <button id="upload">Add Selected Items</button>
         {% endif %}
     </div>
@@ -64,6 +80,12 @@
                 <li>{{ title }} - ${{ '%.2f'|format(price) }}</li>
             {% endfor %}
         </ul>
+        <h3>Walmart:</h3>
+        <ul id="selected_items_walmart">
+            {% for title, price in selected_items_walmart %}
+                <li>{{ title }} - ${{ '%.2f'|format(price) }}</li>
+            {% endfor %}
+        </ul>
     </div>
 
     <!-- Display Total Costs -->
@@ -71,11 +93,12 @@
         <h2>Total Costs</h2>
         <p>HEB: $<span id="total_cost_heb">{{ total_cost_heb }}</span></p>
         <p>Target: $<span id="total_cost_target">{{ total_cost_target }}</span></p>
+        <p>Walmart: $<span id="total_cost_walmart">{{ total_cost_walmart }}</span></p>
     </div>
 
     <!-- Display Savings -->
     <div id="savings_section">
-        <p id="savings_message">You would save ${{ savings }} at {{ cheaper_store }}.</p>
+        <p id="savings_message">You would save an average of ${{ savings }} at {{ cheaper_store }}.</p>
     </div>
 
     <script>
@@ -86,8 +109,10 @@
 
                 const selectedHeb = $('input[name="selected_heb"]:checked').val();
                 const selectedTarget = $('input[name="selected_target"]:checked').val();
+                const selectedWalmart = $('input[name="selected_walmart"]:checked').val();
                 const topHebMatches = {{ top_heb_matches|tojson|safe }};
                 const topTargetMatches = {{ top_target_matches|tojson|safe }};
+                const topWalmartMatches = {{ top_walmart_matches|tojson|safe }};
 
                 $.ajax({
                     url: "/add_items",
@@ -96,8 +121,10 @@
                     data: JSON.stringify({
                         selected_heb: selectedHeb,
                         selected_target: selectedTarget,
+                        selected_walmart: selectedWalmart,
                         top_heb_matches: topHebMatches,
-                        top_target_matches: topTargetMatches
+                        top_target_matches: topTargetMatches,
+                        top_walmart_matches: topWalmartMatches
                     }),
                     success: function(response) {
                         // Update Selected Items
@@ -111,9 +138,15 @@
                             $('#selected_items_target').append('<li>' + item[0] + ' - $' + parseFloat(item[1]).toFixed(2) + '</li>');
                         });
 
+                        $('#selected_items_walmart').empty();
+                        response.selected_items_walmart.forEach(function(item) {
+                            $('#selected_items_walmart').append('<li>' + item[0] + ' - $' + parseFloat(item[1]).toFixed(2) + '</li>');
+                        });
+
                         // Update Total Costs
                         $('#total_cost_heb').text(response.total_cost_heb);
                         $('#total_cost_target').text(response.total_cost_target);
+                        $('#total_cost_walmart').text(response.total_cost_walmart);
 
                         // Update Savings Message
                         $('#savings_message').text('You would save $' + response.savings + ' at ' + response.cheaper_store + '.');
@@ -121,6 +154,7 @@
                         // Clear search results
                         $('#heb_section').remove();
                         $('#target_section').remove();
+                        $('#walmart_section').remove();
                     }
                 });
             });
@@ -136,8 +170,10 @@
                         // Clear displayed items and reset totals
                         $('#selected_items_heb').empty();
                         $('#selected_items_target').empty();
+                        $('#selected_items_walmart').empty();
                         $('#total_cost_heb').text('0.00');
                         $('#total_cost_target').text('0.00');
+                        $('#total_cost_walmart').text('0.00');
                         $('#savings_message').text('You would save $0.00 at HEB.');
                     }
                 });
