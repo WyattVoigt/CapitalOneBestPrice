@@ -1,0 +1,88 @@
+from flask import Flask, render_template, request, session
+import pandas as pd
+
+app = Flask(__name__)
+app.secret_key = 'supersecretkey'
+
+# Load data from CSV files
+file_path_heb = 'products_HEB.csv'
+file_path_target = 'products_Target.csv'
+
+# Load the CSV data into DataFrames
+df_heb = pd.read_csv(file_path_heb, encoding='latin1', on_bad_lines='skip')
+df_target = pd.read_csv(file_path_target, encoding='latin1', on_bad_lines='skip')
+
+# Flask route for the main page
+@app.route("/", methods=["GET", "POST"])
+def index():
+    search_input = ""
+    top_heb_matches = []
+    top_target_matches = []
+
+    # Initialize session variables for storing selected items
+    if 'heb_items' not in session:
+        session['heb_items'] = []
+    if 'target_items' not in session:
+        session['target_items'] = []
+
+    if request.method == "POST":
+        if 'search' in request.form:
+            search_input = request.form.get("search_input", "").strip().lower()
+
+            # Filter and sort HEB matches
+            matches_heb = df_heb[df_heb['title'].str.contains(search_input, case=False, na=False)].copy()
+            matches_heb['title_length'] = matches_heb['title'].str.len()
+            top_heb_matches = matches_heb.sort_values(by='title_length').head(10).to_dict('records')
+
+            # Filter and sort Target matches
+            matches_target = df_target[df_target['title'].str.contains(search_input, case=False, na=False)].copy()
+            matches_target['title_length'] = matches_target['title'].str.len()
+            top_target_matches = matches_target.sort_values(by='title_length').head(10).to_dict('records')
+
+        elif 'upload' in request.form or 'done' in request.form:
+            # Check if top matches are populated to reference them
+            if 'top_heb_matches' in locals() and top_heb_matches:
+                selected_heb_index = int(request.form.get('selected_heb', -1))
+                if selected_heb_index >= 0 and selected_heb_index < len(top_heb_matches):
+                    selected_heb = top_heb_matches[selected_heb_index]
+                    # Store title and price as string and float
+                    session['heb_items'].append({
+                        'title': selected_heb['title'],  # Directly access as a string
+                        'price': float(selected_heb['price'])
+                    })
+
+            if 'top_target_matches' in locals() and top_target_matches:
+                selected_target_index = int(request.form.get('selected_target', -1))
+                if selected_target_index >= 0 and selected_target_index < len(top_target_matches):
+                    selected_target = top_target_matches[selected_target_index]
+                    # Store title and price as string and float
+                    session['target_items'].append({
+                        'title': selected_target['title'],  # Directly access as a string
+                        'price': float(selected_target['price'])
+                    })
+
+            session.modified = True
+
+            if 'done' in request.form:
+                # Clear the search and top matches when "Done" is clicked
+                search_input = ""
+                top_heb_matches = []
+                top_target_matches = []
+                print(session['heb_items'])
+                return render_template("index.html", search_input=search_input,
+                                       top_heb_matches=top_heb_matches, top_target_matches=top_target_matches,
+                                       selected_items_heb=session['heb_items'],
+                                       selected_items_target=session['target_items'],
+                                       show_done=True, enumerate=enumerate)
+
+    return render_template("index.html", search_input=search_input,
+                           top_heb_matches=top_heb_matches, top_target_matches=top_target_matches,
+                           selected_items_heb=session['heb_items'], selected_items_target=session['target_items'],
+                           show_done=False, enumerate=enumerate)
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
+
