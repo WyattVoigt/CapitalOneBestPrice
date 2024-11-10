@@ -55,52 +55,40 @@
         <!-- HEB Matches -->
         <div id="heb_section">
             <h2>Top 10 HEB Matches</h2>
-            {% if top_heb_matches %}
-                <ul id="heb_matches">
-                    {% for idx, item in enumerate(top_heb_matches) %}
-                        <li>
-                            <input type="radio" name="selected_heb" value="{{ idx }}" id="heb_{{ idx }}">
-                            <label for="heb_{{ idx }}">{{ item['title'] }} <span>${{ '%.2f'|format(item['price']) }}</span></label>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <ul id="heb_matches"></ul> <!-- Empty list for clearing -->
-            {% endif %}
+            <ul id="heb_matches">
+                {% for idx, item in enumerate(top_heb_matches) %}
+                    <li>
+                        <input type="radio" name="selected_heb" value="{{ idx }}" id="heb_{{ idx }}">
+                        <label for="heb_{{ idx }}">{{ item['title'] }} <span>${{ '%.2f'|format(item['price']) }}</span></label>
+                    </li>
+                {% endfor %}
+            </ul>
         </div>
 
         <!-- Target Matches -->
         <div id="target_section">
             <h2>Top 10 Target Matches</h2>
-            {% if top_target_matches %}
-                <ul id="target_matches">
-                    {% for idx, item in enumerate(top_target_matches) %}
-                        <li>
-                            <input type="radio" name="selected_target" value="{{ idx }}" id="target_{{ idx }}">
-                            <label for="target_{{ idx }}">{{ item['title'] }} <span>${{ '%.2f'|format(item['price']) }}</span></label>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <ul id="target_matches"></ul> <!-- Empty list for clearing -->
-            {% endif %}
+            <ul id="target_matches">
+                {% for idx, item in enumerate(top_target_matches) %}
+                    <li>
+                        <input type="radio" name="selected_target" value="{{ idx }}" id="target_{{ idx }}">
+                        <label for="target_{{ idx }}">{{ item['title'] }} <span>${{ '%.2f'|format(item['price']) }}</span></label>
+                    </li>
+                {% endfor %}
+            </ul>
         </div>
 
         <!-- Walmart Matches -->
         <div id="walmart_section">
             <h2>Top 10 Walmart Matches</h2>
-            {% if top_walmart_matches %}
-                <ul id="walmart_matches">
-                    {% for idx, item in enumerate(top_walmart_matches) %}
-                        <li>
-                            <input type="radio" name="selected_walmart" value="{{ idx }}" id="walmart_{{ idx }}">
-                            <label for="walmart_{{ idx }}">{{ item['Title'] }} <span>${{ '%.2f'|format(item['PRICE_CURRENT']) }}</span></label>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <ul id="walmart_matches"></ul> <!-- Empty list for clearing -->
-            {% endif %}
+            <ul id="walmart_matches">
+                {% for idx, item in enumerate(top_walmart_matches) %}
+                    <li>
+                        <input type="radio" name="selected_walmart" value="{{ idx }}" id="walmart_{{ idx }}">
+                        <label for="walmart_{{ idx }}">{{ item['Title'] }} <span>${{ '%.2f'|format(item['PRICE_CURRENT']) }}</span></label>
+                    </li>
+                {% endfor %}
+            </ul>
         </div>
     </div>
 
@@ -157,6 +145,20 @@
 
     <script>
         $(document).ready(function() {
+            // Function to check if there are any selected items and show the Next Page button
+            function checkSelectedItems() {
+                if ($('#selected_items_heb li').length > 0 ||
+                    $('#selected_items_target li').length > 0 ||
+                    $('#selected_items_walmart li').length > 0) {
+                    $('#finishBtn').show();
+                } else {
+                    $('#finishBtn').hide();
+                }
+            }
+
+            // Call the function on page load
+            checkSelectedItems();
+
             // Add selected items and clear search results
             $('#upload').on('click', function(e) {
                 e.preventDefault();
@@ -206,9 +208,7 @@
                         $('#savings_message').text('You would save $' + response.savings + ' at ' + response.cheaper_store + '.');
 
                         // Show the Finish button if there are any selected items
-                        if (response.selected_items_heb.length > 0 || response.selected_items_target.length > 0 || response.selected_items_walmart.length > 0) {
-                            $('#finishBtn').show();
-                        }
+                        checkSelectedItems();
                     }
                 });
             });
