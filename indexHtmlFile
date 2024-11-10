@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Search and Selection</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-</head>
-<body>
+</head><body>
     <h1>Search for Products</h1>
 
     <!-- Search Form -->
@@ -25,7 +26,7 @@
                 {% for idx, item in enumerate(top_heb_matches) %}
                     <li>
                         <input type="radio" name="selected_heb" value="{{ idx }}" id="heb_{{ idx }}">
-                        <label for="heb_{{ idx }}">{{ item['title'] }} - ${{ item['price'] }}</label>
+                        <label for="heb_{{ idx }}">{{ item['title'] }} - ${{ '%.2f'|format(item['price']) }}</label>
                     </li>
                 {% endfor %}
             </ul>
@@ -40,7 +41,7 @@
                 {% for idx, item in enumerate(top_target_matches) %}
                     <li>
                         <input type="radio" name="selected_target" value="{{ idx }}" id="target_{{ idx }}">
-                        <label for="target_{{ idx }}">{{ item['title'] }} - ${{ item['price'] }}</label>
+                        <label for="target_{{ idx }}">{{ item['title'] }} - ${{ '%.2f'|format(item['price']) }}</label>
                     </li>
                 {% endfor %}
             </ul>
@@ -54,13 +55,13 @@
         <h3>HEB:</h3>
         <ul id="selected_items_heb">
             {% for title, price in selected_items_heb %}
-                <li>{{ title }} - ${{ price }}</li>
+                <li>{{ title }} - ${{ '%.2f'|format(price) }}</li>
             {% endfor %}
         </ul>
         <h3>Target:</h3>
         <ul id="selected_items_target">
             {% for title, price in selected_items_target %}
-                <li>{{ title }} - ${{ price }}</li>
+                <li>{{ title }} - ${{ '%.2f'|format(price) }}</li>
             {% endfor %}
         </ul>
     </div>
@@ -72,6 +73,11 @@
         <p>Target: $<span id="total_cost_target">{{ total_cost_target }}</span></p>
     </div>
 
+    <!-- Display Savings -->
+    <div id="savings_section">
+        <p id="savings_message">You would save ${{ savings }} at {{ cheaper_store }}.</p>
+    </div>
+
     <script>
         $(document).ready(function() {
             // Add selected items and clear search results
@@ -80,8 +86,8 @@
 
                 const selectedHeb = $('input[name="selected_heb"]:checked').val();
                 const selectedTarget = $('input[name="selected_target"]:checked').val();
-                const topHebMatches = {{ top_heb_matches|tojson }};
-                const topTargetMatches = {{ top_target_matches|tojson }};
+                const topHebMatches = {{ top_heb_matches|tojson|safe }};
+                const topTargetMatches = {{ top_target_matches|tojson|safe }};
 
                 $.ajax({
                     url: "/add_items",
@@ -97,17 +103,20 @@
                         // Update Selected Items
                         $('#selected_items_heb').empty();
                         response.selected_items_heb.forEach(function(item) {
-                            $('#selected_items_heb').append('<li>' + item[0] + ' - $' + item[1] + '</li>');
+                            $('#selected_items_heb').append('<li>' + item[0] + ' - $' + parseFloat(item[1]).toFixed(2) + '</li>');
                         });
 
                         $('#selected_items_target').empty();
                         response.selected_items_target.forEach(function(item) {
-                            $('#selected_items_target').append('<li>' + item[0] + ' - $' + item[1] + '</li>');
+                            $('#selected_items_target').append('<li>' + item[0] + ' - $' + parseFloat(item[1]).toFixed(2) + '</li>');
                         });
 
                         // Update Total Costs
                         $('#total_cost_heb').text(response.total_cost_heb);
                         $('#total_cost_target').text(response.total_cost_target);
+
+                        // Update Savings Message
+                        $('#savings_message').text('You would save $' + response.savings + ' at ' + response.cheaper_store + '.');
 
                         // Clear search results
                         $('#heb_section').remove();
@@ -127,8 +136,9 @@
                         // Clear displayed items and reset totals
                         $('#selected_items_heb').empty();
                         $('#selected_items_target').empty();
-                        $('#total_cost_heb').text('0');
-                        $('#total_cost_target').text('0');
+                        $('#total_cost_heb').text('0.00');
+                        $('#total_cost_target').text('0.00');
+                        $('#savings_message').text('You would save $0.00 at HEB.');
                     }
                 });
             });
