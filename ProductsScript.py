@@ -15,7 +15,7 @@ try:
             raise ValueError(f"{store} data does not contain 'title' and/or 'price' columns.")
     print("Both HEB and Target contain 'title' and 'price' columns.")
 
-    # Initialize lists for storing selected items and prices
+    # Initialize lists for storing selected items (title and price)
     selected_items_heb = []
     selected_items_target = []
     total_cost_heb = 0
@@ -26,7 +26,7 @@ try:
         matches = df[df['title'].str.contains(search_input, case=False, na=False)].copy()
         matches['title_length'] = matches['title'].apply(len)
         matches_sorted = matches.sort_values(by='title_length').reset_index(drop=True).head(10)
-        
+
         if matches_sorted.empty:
             print(f"No matches found for '{search_input}' in {store_name}.")
             return None
@@ -52,29 +52,29 @@ try:
         heb_choice = display_top_matches(df_heb, search_input, "HEB")
         if heb_choice:
             title, price = heb_choice
-            selected_items_heb.append(title)
+            selected_items_heb.append((title, price))
             total_cost_heb += price
 
         # Display and select top 10 items from Target
         target_choice = display_top_matches(df_target, search_input, "Target")
         if target_choice:
             title, price = target_choice
-            selected_items_target.append(title)
+            selected_items_target.append((title, price))
             total_cost_target += price
 
-    # Determine and output the cheaper list
+    # Determine and output the selected items and total cost
     if selected_items_heb or selected_items_target:
         print("\nYour Selected Items:")
         if total_cost_heb < total_cost_target:
             print(f"\nCheapest Store: HEB\nTotal Cost: ${total_cost_heb:.2f}")
             print("Items:")
-            for item in selected_items_heb:
-                print(f" - {item}")
+            for title, price in selected_items_heb:
+                print(f" - {title} - ${price:.2f}")
         else:
             print(f"\nCheapest Store: Target\nTotal Cost: ${total_cost_target:.2f}")
             print("Items:")
-            for item in selected_items_target:
-                print(f" - {item}")
+            for title, price in selected_items_target:
+                print(f" - {title} - ${price:.2f}")
     else:
         print("No items were selected.")
 
