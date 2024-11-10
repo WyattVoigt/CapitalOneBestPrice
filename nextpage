@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cheapest Store Summary</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        /* Center the content */
+        .content-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3 {
+            margin: 10px 0;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        .finish-btn {
+            margin-top: 20px;
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .finish-btn:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="content-container">
+        <h1>Cheapest Store Summary</h1>
+        <h2>{{ cheapest_store }}</h2>
+        <h3>Items and Prices</h3>
+        <ul>
+            {% for title, price in items_for_cheapest_store %}
+                <li>{{ title }} - ${{ '%.2f'|format(price) }}</li>
+            {% endfor %}
+        </ul>
+        <h3>Total: ${{ running_total }}</h3>
+        <a href="{{ url_for('index') }}" class="finish-btn">Return Home</a>
+    </div>
+</body>
+</html>
