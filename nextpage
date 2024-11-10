@@ -6,58 +6,100 @@
     <title>Cheapest Store Summary</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <style>
-        /* Center the content */
-        .content-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            min-height: 100vh;
-        }
-
-        h1, h2, h3 {
-            margin: 10px 0;
-        }
-
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        li {
-            margin: 5px 0;
-        }
-
-        .finish-btn {
-            margin-top: 20px;
-            background-color: #28a745;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-
-        .finish-btn:hover {
-            background-color: #218838;
-        }
-    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <div class="content-container">
+    <div class="container">
         <h1>Cheapest Store Summary</h1>
         <h2>{{ cheapest_store }}</h2>
+
         <h3>Items and Prices</h3>
-        <ul>
+        <ul class="items-list">
             {% for title, price in items_for_cheapest_store %}
-                <li>{{ title }} - ${{ '%.2f'|format(price) }}</li>
+                <li>{{ title }} - ${{ '%.2f'|format(price) }} <span class="remove-item" data-title="{{ title }}" data-price="{{ price }}">X</span></li>
             {% endfor %}
         </ul>
-        <h3>Total: ${{ running_total }}</h3>
-        <a href="{{ url_for('index') }}" class="finish-btn">Return Home</a>
+
+        <h3>Total: $<span id="running_total">{{ running_total }}</span></h3>
+
+        <!-- Back Button to go back to the previous page -->
+        <a href="{{ url_for('index') }}" class="back-btn">Go Back</a>
     </div>
+
+    <style>
+        /* Center the content */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        /* Styles for the items list */
+        .items-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .items-list li {
+            margin: 10px 0;
+            font-size: 1.1em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .remove-item {
+            cursor: pointer;
+            color: red;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        /* Styles for the back button */
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .back-btn:hover {
+            background-color: #2980b9;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            // Remove item from the list when "X" is clicked
+            $('.remove-item').on('click', function() {
+                const title = $(this).data('title');
+                const price = parseFloat($(this).data('price'));
+
+                // Remove the item from the DOM
+                $(this).closest('li').remove();
+
+                // Update the running total
+                let runningTotal = parseFloat($('#running_total').text());
+                runningTotal -= price;
+                $('#running_total').text(runningTotal.toFixed(2));
+
+                // Send an AJAX request to update the session on the server side
+                $.ajax({
+                    url: "/remove_item",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({ title: title, price: price }),
+                    success: function(response) {
+                        console.log("Item removed successfully");
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
